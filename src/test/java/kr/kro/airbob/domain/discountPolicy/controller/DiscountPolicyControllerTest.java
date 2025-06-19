@@ -2,6 +2,8 @@ package kr.kro.airbob.domain.discountPolicy.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import kr.kro.airbob.cursor.util.CursorDecoder;
+import kr.kro.airbob.domain.accommodation.interceptor.AccommodationAuthorizationInterceptor;
 import kr.kro.airbob.domain.discountPolicy.DiscountPolicy;
 import kr.kro.airbob.domain.discountPolicy.common.DiscountType;
 import kr.kro.airbob.domain.discountPolicy.common.PromotionType;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,6 +39,12 @@ public class DiscountPolicyControllerTest {
 
     @MockitoBean
     private DiscountPolicyService discountPolicyService;
+    @MockitoBean
+    private CursorDecoder cursorDecoder;
+    @MockitoBean
+    private RedisTemplate<String, Object> redisTemplate;
+    @MockitoBean
+    private AccommodationAuthorizationInterceptor accommodationAuthorizationInterceptor;
 
     @Autowired
     private MockMvc mockMvc;

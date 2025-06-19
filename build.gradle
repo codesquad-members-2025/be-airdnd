@@ -39,6 +39,12 @@ dependencies {
 	// Spring Data JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+	//해싱
+	implementation 'org.mindrot:jbcrypt:0.4'
+
+	//Redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 	// Flyway
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.flywaydb:flyway-mysql'
@@ -49,6 +55,12 @@ dependencies {
 
 	// MySQL JDBC 드라이버
 	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	//query dsl
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
 	// 테스트
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -116,7 +128,7 @@ tasks.register('generateAdoc') {
 					"request-fields": "요청 필드 설명",
 					"response-fields": "응답 필드 설명",
 					"path-parameters": "경로 변수 설명",
-					"request-parameters": "요청 파라미터 설명",
+					"query-parameters": "요청 파라미터 설명",
 					"response-headers": "응답 헤더 설명"
 			]
 

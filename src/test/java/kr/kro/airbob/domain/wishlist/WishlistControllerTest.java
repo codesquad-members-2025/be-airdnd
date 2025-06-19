@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
+import kr.kro.airbob.domain.accommodation.interceptor.AccommodationAuthorizationInterceptor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -56,6 +58,11 @@ class WishlistControllerTest extends BaseControllerDocumentationTest {
 
 	@MockitoBean
 	private CursorPageInfoCreator cursorPageInfoCreator;
+
+	@MockitoBean
+	private RedisTemplate<String, Object> redisTemplate;
+	@MockitoBean
+	private AccommodationAuthorizationInterceptor accommodationAuthorizationInterceptor;
 
 
 	@Autowired
