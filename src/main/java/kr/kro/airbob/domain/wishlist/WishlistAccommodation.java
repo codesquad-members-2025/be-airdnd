@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import kr.kro.airbob.common.domain.BaseEntity;
-
 import kr.kro.airbob.domain.accommodation.entity.Accommodation;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -36,4 +35,8 @@ public class WishlistAccommodation extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "accommodation_id")
 	private Accommodation accommodation;
+
+	public void updateMemo(String memo) {
+		this.memo = memo;
+	}
 }

@@ -1,16 +1,32 @@
 package kr.kro.airbob.domain.accommodation.repository;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.OptionalLong;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import kr.kro.airbob.domain.accommodation.entity.Accommodation;
 import kr.kro.airbob.domain.accommodation.entity.Address;
 import kr.kro.airbob.domain.accommodation.repository.querydsl.AccommodationRepositoryCustom;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import kr.kro.airbob.domain.image.AccommodationImage;
 
 public interface AccommodationRepository extends JpaRepository<Accommodation, Long>, AccommodationRepositoryCustom {
     Optional<Address> findAddressById(Long accommodationId);
 
     @Query("select a.member.id from Accommodation a where a.id = :id")
     Optional<Long> findHostIdByAccommodationId(Long id);
+
+	@Query("""
+	SELECT 
+		ai
+	FROM AccommodationImage ai
+	WHERE ai.accommodation.id IN :accommodationIds
+	ORDER BY ai.accommodation.id
+	""")
+	List<AccommodationImage> findAccommodationImagesByAccommodationIds(
+		@Param("accommodationIds") List<Long> accommodationIds);
+
+	List<Accommodation> findByIdIn(List<Long> accommodationIds);
 }

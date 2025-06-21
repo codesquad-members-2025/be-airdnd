@@ -2,6 +2,8 @@ package kr.kro.airbob.common.exception;
 
 import java.util.stream.Collectors;
 
+import kr.kro.airbob.domain.accommodation.exception.AccommodationNotFoundException;
+import kr.kro.airbob.domain.reservation.exception.AlreadyReservedException;
 import kr.kro.airbob.domain.auth.exception.NotEqualHostException;
 import kr.kro.airbob.domain.member.exception.DuplicatedEmailException;
 import org.springframework.http.HttpStatus;
@@ -10,11 +12,18 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import kr.kro.airbob.cursor.exception.CursorEncodingException;
 import kr.kro.airbob.cursor.exception.CursorPageSizeException;
+import kr.kro.airbob.domain.accommodation.exception.AccommodationNotFoundException;
 import kr.kro.airbob.domain.member.exception.MemberNotFoundException;
+import kr.kro.airbob.domain.review.ReviewSortType;
+import kr.kro.airbob.domain.review.exception.ReviewSummaryNotFoundException;
+import kr.kro.airbob.domain.review.ReviewSortType;
 import kr.kro.airbob.domain.wishlist.exception.WishlistAccessDeniedException;
+import kr.kro.airbob.domain.wishlist.exception.WishlistAccommodationAccessDeniedException;
+import kr.kro.airbob.domain.wishlist.exception.WishlistAccommodationNotFoundException;
 import kr.kro.airbob.domain.wishlist.exception.WishlistNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,16 +31,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GlobalExceptionHandler {
 
-	@ExceptionHandler(MethodArgumentNotValidException.class) // @Valid에서 발생하는 에러
-	public ResponseEntity<Void> handleValidationExceptions(MethodArgumentNotValidException e) {
-		String errorMessage = e.getBindingResult()
-			.getFieldErrors()
-			.stream()
-			.map(FieldError::getDefaultMessage)
-			.collect(Collectors.joining(", "));
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public ResponseEntity<Void> handleEnumBindingError(MethodArgumentTypeMismatchException e) {
+		return ResponseEntity.badRequest().build();
+	}
 
-		log.error("Bean Validation error(@Valid): {}", errorMessage);
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+	@ExceptionHandler(AccommodationNotFoundException.class)
+	public ResponseEntity<Void> handleAccommodationNotFoundException(AccommodationNotFoundException e) {
+		log.error("AccommodationNotFoundException: {}", e.getMessage());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.build();
+	}
+
+	@ExceptionHandler(ReviewSummaryNotFoundException.class)
+	public ResponseEntity<Void> handleReviewSummaryNotFoundException(ReviewSummaryNotFoundException e) {
+		log.error("ReviewSummaryNotFoundException: {}", e.getMessage());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.build();
 	}
 
 	@ExceptionHandler(MemberNotFoundException.class)
@@ -40,6 +56,14 @@ public class GlobalExceptionHandler {
 		return ResponseEntity
 			.status(HttpStatus.NOT_FOUND)
 			.build();
+	}
+
+	@ExceptionHandler(AlreadyReservedException.class)
+	public ResponseEntity<Void> handleAlreadyReservedException(AlreadyReservedException e) {
+		log.error("AlreadyReservedException: {}", e.getMessage());
+		return ResponseEntity
+				.status(HttpStatus.CONFLICT)
+				.build();
 	}
 
 	@ExceptionHandler(WishlistNotFoundException.class)
@@ -63,6 +87,30 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(CursorPageSizeException.class)
 	public ResponseEntity<Void> handleCursorPageSizeException(CursorPageSizeException e) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+	}
+
+	@ExceptionHandler(WishlistAccommodationAccessDeniedException.class)
+	public ResponseEntity<Void> handleWishlistAccommodationAccessDeniedException(
+		WishlistAccommodationAccessDeniedException e) {
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+	}
+
+	@ExceptionHandler(WishlistAccommodationNotFoundException.class)
+	public ResponseEntity<Void> handleWishlistAccommodationNotFoundException(
+		WishlistAccommodationNotFoundException e) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class) // @Valid에서 발생하는 에러
+	public ResponseEntity<Void> handleValidationExceptions(MethodArgumentNotValidException e) {
+		String errorMessage = e.getBindingResult()
+			.getFieldErrors()
+			.stream()
+			.map(FieldError::getDefaultMessage)
+			.collect(Collectors.joining(", "));
+
+		log.error("Bean Validation error(@Valid): {}", errorMessage);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 	}
 
