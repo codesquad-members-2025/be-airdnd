@@ -18,10 +18,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Payment {
@@ -45,9 +47,26 @@ public class Payment {
 	@Column(name = "paid_at", nullable = false)
 	private LocalDateTime paidAt;
 
+	private boolean isCancelled; //결제 취소 여부
+
+	private LocalDateTime cancelledAt; //결제 취소 시각
+
+	private String paymentKey;
+
+	private String cancelReason;
+
 	@PrePersist
 	public void prePersist() {
 		this.paidAt = LocalDateTime.now();
 	}
 
+	public void cancel(String reason) {
+		this.isCancelled = true;
+		this.cancelledAt = LocalDateTime.now();
+		this.cancelReason = reason;
+	}
+
+	public boolean isCancelled() {
+		return this.isCancelled;
+	}
 }

@@ -23,4 +23,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 		    WHERE res.accommodation.id = :accommodationId
 		""")
 	List<ReviewDto> findReviewByAccommodationId(@Param("accommodationId") Long accommodationId);
+
+	boolean existsByReservationId(Long reservationId);
 }

@@ -1,4 +1,4 @@
-package com.team3.airdnd;
+package com.team3.airdnd.config;
 
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;

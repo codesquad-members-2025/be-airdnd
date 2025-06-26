@@ -19,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.MapBoundAccommodationSearchDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.service.AccommodationService;
@@ -84,27 +83,14 @@ public class AccommodationController {
 		return ResponseDto.ok(accommodationService.getPriceHistogram(request));
 	}
 
-	//속소 목록 페이징 조회 기능
 	@GetMapping("")
-	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationListDto>> getAccommodationList(
+	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationListDto>> getAccommodationListByMap(
 		@Valid @ModelAttribute AccommodationListConditionDto request,
 		@RequestParam(required = false, defaultValue = "1") int page,
 		@RequestParam(required = false, defaultValue = "10") int size
 	) {
-		AccommodationResponseDto.AccommodationListDto accommodations = accommodationService.getAccommodations(request,
-			page,
-			size);
-		return ResponseDto.ok(accommodations);
-	}
-
-	@GetMapping("/map")
-	public ResponseEntity<ResponseDto<AccommodationResponseDto.AccommodationListDto>> getAccommodationListByMap(
-		@Valid @ModelAttribute MapBoundAccommodationSearchDto request,
-		@RequestParam(required = false, defaultValue = "1") int page,
-		@RequestParam(required = false, defaultValue = "10") int size
-	) {
 		AccommodationResponseDto.AccommodationListDto accommodations =
-			accommodationService.getAccommodationsByMapBounds(request, page, size);
+			accommodationService.getAccommodations(request, page, size);
 
 		return ResponseDto.ok(accommodations);
 	}

@@ -9,7 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 
 import com.team3.airdnd.AbstractIntegrationTest;
-import com.team3.airdnd.QuerydslConfig;
+import com.team3.airdnd.config.QuerydslConfig;
 import com.team3.airdnd.user.domain.User;
 import com.team3.airdnd.user.repository.UserRepository;
 

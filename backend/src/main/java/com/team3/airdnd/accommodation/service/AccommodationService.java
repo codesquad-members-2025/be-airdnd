@@ -20,9 +20,7 @@ import com.team3.airdnd.accommodation.domain.AmenityType;
 import com.team3.airdnd.accommodation.dto.AccommodationListConditionDto;
 import com.team3.airdnd.accommodation.dto.AccommodationRequestDto;
 import com.team3.airdnd.accommodation.dto.AccommodationResponseDto;
-import com.team3.airdnd.accommodation.dto.BaseSearchConditionDto;
 import com.team3.airdnd.accommodation.dto.HostAccommodationQueryDto;
-import com.team3.airdnd.accommodation.dto.MapBoundAccommodationSearchDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramConditionDto;
 import com.team3.airdnd.accommodation.dto.PriceHistogramResponseDto;
 import com.team3.airdnd.accommodation.dto.ReviewDto;
@@ -285,10 +283,6 @@ public class AccommodationService {
 	public PriceHistogramResponseDto getPriceHistogram(PriceHistogramConditionDto request) {
 		request = applyDefaultFilterCondition(request);
 
-		if (request.getLocation() == null || request.getLocation().isBlank()) {
-			request.setLocation("서울");
-		}
-
 		List<Integer> prices = accommodationQueryRepository.findAvailableAccommodationPrices(request);
 
 		if (prices.isEmpty()) {
@@ -348,21 +342,25 @@ public class AccommodationService {
 	}
 
 	@Transactional(readOnly = true)
-	public AccommodationResponseDto.AccommodationListDto getAccommodations(AccommodationListConditionDto request,
-		int page, int size) {
-		request = applyDefaultFilterCondition(request);
-		return accommodationQueryRepository.findAccommodationListWithFilter(request, page, size);
-	}
-
-	@Transactional(readOnly = true)
-	public AccommodationResponseDto.AccommodationListDto getAccommodationsByMapBounds(
-		MapBoundAccommodationSearchDto request, int page, int size) {
+	public AccommodationResponseDto.AccommodationListDto getAccommodations(
+		AccommodationListConditionDto request, int page, int size) {
 
 		applyDefaultMapBounds(request);
 		return accommodationQueryRepository.findAccommodationListWithinBounds(request, page, size);
 	}
 
-	private BaseSearchConditionDto applyBaseDefaults(BaseSearchConditionDto request) {
+	private PriceHistogramConditionDto applyDefaultFilterCondition(PriceHistogramConditionDto request) {
+		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
+		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
+		Integer guests = request.getGuests() != null ? request.getGuests() : 1;
+
+		request.setCheckIn(checkIn);
+		request.setCheckOut(checkOut);
+		request.setGuests(guests);
+		return request;
+	}
+
+	private AccommodationListConditionDto applyDefaultMapBounds(AccommodationListConditionDto request) {
 		LocalDate checkIn = request.getCheckIn() != null ? request.getCheckIn() : LocalDate.now();
 		LocalDate checkOut = request.getCheckOut() != null ? request.getCheckOut() : checkIn.plusDays(1);
 		Integer guests = request.getGuests() != null ? request.getGuests() : 1;
@@ -371,34 +369,9 @@ public class AccommodationService {
 		request.setCheckOut(checkOut);
 		request.setGuests(guests);
 
-		return request;
-	}
-
-	private PriceHistogramConditionDto applyDefaultFilterCondition(PriceHistogramConditionDto request) {
-		applyBaseDefaults(request); // 공통 필드 보정
-		return request;
-	}
-
-	private AccommodationListConditionDto applyDefaultFilterCondition(AccommodationListConditionDto request) {
-		applyBaseDefaults(request); // 공통 필드 보정
-		String location = request.getLocation() != null ? request.getLocation() : "서울";
 		Integer minPrice = request.getMinPrice() != null ? request.getMinPrice() : 1000;
 		Integer maxPrice = request.getMaxPrice() != null ? request.getMaxPrice() : 10_000_000;
 
-		request.setLocation(location);
-		request.setMinPrice(minPrice);
-		request.setMaxPrice(maxPrice);
-
-		return request;
-	}
-
-	private MapBoundAccommodationSearchDto applyDefaultMapBounds(MapBoundAccommodationSearchDto request) {
-		applyBaseDefaults(request);
-		Integer guests = request.getGuests() != null ? request.getGuests() : 1;
-		Integer minPrice = request.getMinPrice() != null ? request.getMinPrice() : 1000;
-		Integer maxPrice = request.getMaxPrice() != null ? request.getMaxPrice() : 10_000_000;
-
-		request.setGuests(guests);
 		request.setMinPrice(minPrice);
 		request.setMaxPrice(maxPrice);
 
@@ -412,11 +385,4 @@ public class AccommodationService {
 
 		return request;
 	}
-	/*
-	//숙소 목록 페이징 구현
-	public AccommodationResponseDto.AccommodationListDto getAccommodations(int page, int size) {
-		return accommodationRepository.getAccommodationListByPage(page, size);
-	}
-
-	 */
 }

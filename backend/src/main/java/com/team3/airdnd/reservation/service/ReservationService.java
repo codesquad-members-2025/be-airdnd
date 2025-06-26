@@ -2,14 +2,19 @@ package com.team3.airdnd.reservation.service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.team3.airdnd.accommodation.domain.Accommodation;
 import com.team3.airdnd.accommodation.repository.AccommodationRepository;
+import com.team3.airdnd.chat.service.ChatService;
 import com.team3.airdnd.global.exception.CommonException;
 import com.team3.airdnd.global.exception.ErrorCode;
 import com.team3.airdnd.payment.repository.PaymentRepository;
@@ -33,6 +38,8 @@ public class ReservationService {
 	private final ReservationRepository reservationRepository;
 	private final ReservedDateRepository reservedDateRepository;
 	private final PaymentRepository paymentRepository;
+	private final RedissonClient redissonClient;
+	private final ChatService chatService;
 
 	public ReservationResponseDto.ReservationInfoResponseDto getReservationInfo(Long accommodationId, LocalDate checkIn,
 		LocalDate checkOut) {
@@ -57,37 +64,43 @@ public class ReservationService {
 	public ReservationResponseDto.CreateReservationResponseDto createReservation(
 		Long accommodationId, ReservationRequestDto.CreateReservationRequestDto request, Long guestId) {
 
-		Accommodation acc = accommodationRepository.findById(accommodationId)
-			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
+		List<RLock> locks = acquireLocksForReservation(accommodationId, request.getCheckIn(), request.getCheckOut());
+		try {
+			Accommodation acc = accommodationRepository.findById(accommodationId)
+				.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
 
-		User user = userRepository.findById(guestId)
-			.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_USER));
+			User user = userRepository.findById(guestId)
+				.orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_USER));
 
-		validateAvailability(acc.getId(), request.getCheckIn(), request.getCheckOut());
-		validateGuestCount(request.getGuests(), acc.getMaxGuests());
+			validateAvailability(acc.getId(), request.getCheckIn(), request.getCheckOut());
+			validateGuestCount(request.getGuests(), acc.getMaxGuests());
 
-		Price price = calculatePrice(acc, request.getCheckIn(), request.getCheckOut());
+			Price price = calculatePrice(acc, request.getCheckIn(), request.getCheckOut());
 
-		Reservation reservation = Reservation.builder()
-			.guest(user)
-			.accommodation(acc)
-			.orderId(UUID.randomUUID().toString())
-			.checkIn(request.getCheckIn())
-			.checkOut(request.getCheckOut())
-			.guestCount(request.getGuests())
-			.totalPrice(price.total())
-			.serviceFee(price.fee())
-			.status(Reservation.Status.PENDING)
-			.build();
+			Reservation reservation = Reservation.builder()
+				.guest(user)
+				.accommodation(acc)
+				.orderId(UUID.randomUUID().toString())
+				.checkIn(request.getCheckIn())
+				.checkOut(request.getCheckOut())
+				.guestCount(request.getGuests())
+				.totalPrice(price.total())
+				.serviceFee(price.fee())
+				.status(Reservation.Status.PENDING)
+				.build();
 
-		reservationRepository.save(reservation);
+			reservationRepository.save(reservation);
+			chatService.createRoomIfNotExists(reservation);
 
-		return ReservationResponseDto.CreateReservationResponseDto.builder()
-			.reservationId(reservation.getId())
-			.orderId(reservation.getOrderId())
-			.status(reservation.getStatus().name())
-			.amount(price.total())
-			.build();
+			return ReservationResponseDto.CreateReservationResponseDto.builder()
+				.reservationId(reservation.getId())
+				.orderId(reservation.getOrderId())
+				.status(reservation.getStatus().name())
+				.amount(price.total())
+				.build();
+		} finally {
+			releaseLocks(locks);
+		}
 	}
 
 	@Transactional
@@ -170,4 +183,35 @@ public class ReservationService {
 
 	private record Price(int nights, long total, long fee) {
 	}
+
+	private List<RLock> acquireLocksForReservation(Long accommodationId, LocalDate checkIn, LocalDate checkOut) {
+		List<LocalDate> dates = checkIn.datesUntil(checkOut).toList();
+		List<RLock> locks = new ArrayList<>();
+
+		for (LocalDate date : dates) {
+			String key = "lock:reservation:" + accommodationId + ":" + date;
+			RLock lock = redissonClient.getLock(key);
+
+			try {
+				boolean locked = lock.tryLock(5, 10, TimeUnit.SECONDS);
+				if (!locked) {
+					throw new CommonException(ErrorCode.LOCK_FAILED, "다른 사용자가 해당 날짜를 예약 중입니다.");
+				}
+				locks.add(lock);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new CommonException(ErrorCode.LOCK_FAILED, "락 획득 중 인터럽트 발생");
+			}
+		}
+		return locks;
+	}
+
+	private void releaseLocks(List<RLock> locks) {
+		for (RLock lock : locks) {
+			if (lock.isHeldByCurrentThread()) {
+				lock.unlock();
+			}
+		}
+	}
+
 }

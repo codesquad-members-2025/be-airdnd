@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결제 실패 - AirDnD</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f5f5f5;
+        }
+        .fail-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .fail-icon {
+            font-size: 60px;
+            color: #dc3545;
+            margin-bottom: 20px;
+        }
+        .back-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .back-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="fail-container">
+        <div class="fail-icon">❌</div>
+        <h1>결제 실패</h1>
+        <p>토스페이먼츠 결제에 실패했습니다.</p>
+        <p>다시 시도해주세요.</p>
+        <button class="back-button" onclick="goBack()">테스트 페이지로 돌아가기</button>
+    </div>
+
+    <script>
+        function goBack() {
+            window.location.href = '/payment-test.html';
+        }
+    </script>
+</body>
+</html> 

@@ -1,4 +1,22 @@
 spring:
+<<<<<<< review-BE
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  redisson:
+    config: |
+      singleServerConfig:
+        address: "redis://127.0.0.1:6379"
+
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 100MB
+
+=======
+>>>>>>> team-03
   springdoc:
     swagger-ui:
       path: /api/swagger-ui.html
@@ -26,3 +44,7 @@ cloud:
       static: ap-northeast-2
     s3:
       bucket: bbz-airdnd-s3
+
+toss:
+  secret-key: ${TOSS_SECRET_KEY}
+  client-key: ${TOSS_CLIENT_KEY}
