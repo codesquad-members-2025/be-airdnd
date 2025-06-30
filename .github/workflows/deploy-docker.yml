@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - dev-temp
 
 jobs:
   build-and-push:

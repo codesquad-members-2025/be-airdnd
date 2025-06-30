@@ -33,7 +33,14 @@ public class AccommodationController {
 	}
 
 	@GetMapping
-	public ApiResponse<AccommodationPageResponse> searchAccommodations(@ModelAttribute @Valid AccommodationSearchRequest request) {
+	public ApiResponse<AccommodationPageResponse> searchAccommodations(
+		@ModelAttribute @Valid AccommodationSearchRequest request) {
 		return ApiResponse.success(accommodationService.findFilteredAccommodations(request));
+	}
+
+	@GetMapping("/search")
+	public ApiResponse<AccommodationPageResponse> searchAccommodationsByElastic(
+		@ModelAttribute @Valid AccommodationSearchRequest request) {
+		return ApiResponse.success(accommodationService.findFilterAccommodationByElastic(request));
 	}
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -23,6 +24,7 @@ import com.dmz.airdnd.common.exception.UserNotFoundException;
 import com.dmz.airdnd.reservation.domain.Reservation;
 import com.dmz.airdnd.reservation.dto.request.ReservationRequest;
 import com.dmz.airdnd.reservation.dto.response.ReservationResponse;
+import com.dmz.airdnd.reservation.event.ReservationCreatedEvent;
 import com.dmz.airdnd.reservation.mapper.ReservationMapper;
 import com.dmz.airdnd.reservation.repository.ReservationRepository;
 import com.dmz.airdnd.user.domain.Role;
@@ -45,6 +47,8 @@ public class ReservationService {
 
 	private final RedisLockService redisLockService;
 
+	private final ApplicationEventPublisher publisher;
+
 	@Transactional
 	@RoleCheck(Role.USER)
 	public ReservationResponse booking(Long accommodationId, ReservationRequest request) {
@@ -56,6 +60,7 @@ public class ReservationService {
 		List<String> keys = createKeys(accommodationId, request);
 
 		Reservation newReservation = reserveUnderLock(reservation, accommodation, keys);
+		publisher.publishEvent(new ReservationCreatedEvent(newReservation.getId()));
 
 		return ReservationMapper.toResponse(newReservation, accommodation);
 	}

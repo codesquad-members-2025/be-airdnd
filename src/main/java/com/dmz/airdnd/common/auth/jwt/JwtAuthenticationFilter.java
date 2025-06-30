@@ -44,6 +44,11 @@ public class JwtAuthenticationFilter implements Filter {
 		// OPTIONS 요청 우회
 		if ("OPTIONS".equalsIgnoreCase(method)) {
 			httpResponse.setStatus(HttpServletResponse.SC_OK);
+			httpResponse.setHeader("Access-Control-Allow-Origin", httpRequest.getHeader("Origin"));
+			httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+			httpResponse.setHeader("Access-Control-Allow-Headers",
+				httpRequest.getHeader("Access-Control-Request-Headers"));
+			httpResponse.setHeader("Access-Control-Allow-Credentials", "true");
 			return;
 		}
 
@@ -84,7 +89,9 @@ public class JwtAuthenticationFilter implements Filter {
 	}
 
 	private boolean isPermitAllPath(String uri) {
-		return uri.startsWith("/api/auth") || uri.startsWith("/swagger-ui") || uri.startsWith("/v3/api-docs");
+		return uri.startsWith("/api/auth") || uri.startsWith("/swagger-ui") || uri.startsWith("/v3/api-docs")
+			|| uri.startsWith("/ws");
+
 	}
 
 	private void writeJsonResponse(HttpServletResponse response, ApiResponse<Void> dto) throws

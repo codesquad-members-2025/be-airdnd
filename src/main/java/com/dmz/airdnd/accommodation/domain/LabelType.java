@@ -1,5 +1,8 @@
 package com.dmz.airdnd.accommodation.domain;
 
+import com.dmz.airdnd.common.exception.ErrorCode;
+import com.dmz.airdnd.common.exception.LabelNotFoundException;
+
 public enum LabelType {
 	WIFI("와이파이"),
 	KITCHEN("주방"),
@@ -44,5 +47,14 @@ public enum LabelType {
 
 	public String getDisplayName() {
 		return this.displayName;
+	}
+
+	public static String fromDisplayName(String displayName) {
+		for (LabelType type : values()) {
+			if (type.displayName.equals(displayName)) {
+				return String.valueOf(type);
+			}
+		}
+		throw new LabelNotFoundException(ErrorCode.LABEL_NOT_FOUND);
 	}
 }

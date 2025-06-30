@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.dmz.airdnd.accommodation.domain.Accommodation;
 import com.dmz.airdnd.accommodation.repository.AccommodationRepository;
@@ -51,6 +52,9 @@ class ReservationServiceTest {
 
 	@Mock
 	private RedisLockService redisLockService;
+
+	@Mock
+	private ApplicationEventPublisher publisher;
 
 	private Reservation reservation;
 
